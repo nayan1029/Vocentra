@@ -1,0 +1,29 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: vocentra
+      POSTGRES_PASSWORD: vocentra
+      POSTGRES_DB: vocentra
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  server:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.server
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+      DATABASE_URL: postgresql://vocentra:vocentra@postgres:5432/vocentra?schema=public
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-production}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      CLIENT_URL: http://localhost:5173
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
